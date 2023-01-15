@@ -13,71 +13,29 @@ else
 end
 
 local Cores = { 000, 001, 002, 003, 004, 005, 006, 007, 008, 009, 010, 011, 012, 013, 014, 015, 016, 017, 018, 019, 020, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 037, 038, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 064, 065, 066, 067, 068, 069, 070, 071, 072, 073, 074, 075, 076, 077, 078, 079, 080, 081, 082, 083, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146,}
-local PedsRepairs = {}
 local Reparar = false
 
-CreateThread(function()
-while true do
-    Wait(500)
-    for k = 1, #Config.PedListRepairs, 1 do
-        v = Config.PedListRepairs[k]
-        local playerCoords = GetEntityCoords(PlayerPedId())
-        local dist = #(playerCoords - v.coords)
+local peds = Config.Peds
 
-            if dist < 50.0 and not PedsRepairs[k] then
-                local ped = nearPed(v.model, v.coords, v.heading, v.gender, v.animDict, v.animName, v.scenario)
-                PedsRepairs[k] = {ped = ped}
-            end
+---------------------------------------- #### THREADS #### ----------------------------------------
 
-            if dist >= 50.0 and PedsRepairs[k] then
-                for i = 255, 0, -51 do
-                    Wait(50)
-                    SetEntityAlpha(PedsRepairs[k].ped, i, false)
-                end
-                DeletePed(PedsRepairs[k].ped)
-                PedsRepairs[k] = nil
-            end
+CreateThread(function() -- Thread to start the peds
+    for _, item in pairs(peds) do
+        RequestModel(item.hash)
+        while not HasModelLoaded(item.hash) do
+            Wait(100)
+        end
+        if item.ped == nil then
+            item.ped = CreatePed(item.type, item.hash, item.vector4, item.a, false, true)
+            SetBlockingOfNonTemporaryEvents(peds, false)
+            SetPedDiesWhenInjured(item.ped, false)
+            SetPedCanPlayAmbientAnims(item.ped, true)
+            SetPedCanRagdollFromPlayerImpact(item.ped, false)
+            SetEntityInvincible(item.ped, true)
+            FreezeEntityPosition(item.ped, true)
         end
     end
 end)
-
-nearPed = function(model, coords, heading, gender, animDict, animName, scenario)
-    RequestModel(GetHashKey(model))
-    while not HasModelLoaded(GetHashKey(model)) do
-        Wait(1)
-    end
-
-    if gender == 'male' then
-        genderNum = 4
-    elseif gender == 'female' then 
-        genderNum = 5
-    else
-        print("No gender provided! Check your configuration!")
-    end 
-
-    ped = CreatePed(genderNum, GetHashKey(v.model), coords, heading, false, true)
-    SetEntityAlpha(ped, 0, false)
-
-    FreezeEntityPosition(ped, true)
-    SetEntityInvincible(ped, true)
-    SetBlockingOfNonTemporaryEvents(ped, true)
-    if animDict and animName then
-        RequestAnimDict(animDict)
-        while not HasAnimDictLoaded(animDict) do
-            Wait(1)
-        end
-        TaskPlayAnim(ped, animDict, animName, 8.0, 0, -1, 1, 0, 0, 0)
-    end
-    if scenario then
-        TaskStartScenarioInPlace(ped, scenario, 0, true) 
-    end
-    for i = 0, 255, 51 do
-        Wait(50)
-        SetEntityAlpha(ped, i, false)
-    end
-
-    return ped
-end
 
 --- BLIPS
 
@@ -241,5 +199,51 @@ AddEventHandler("m-Repairs:client:Reparar", function()
                 QBCore.Functions.Notify("Mechanics available :)", "error")
             end
         end)
+    else
+        if Config.Function == 'all' then
+            if Config.Payment == 'off' then
+                RepararCarro()
+                Wait(5000)
+                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+                RepararPopo(vehicle)
+            elseif Config.Payment == 'cash' then
+                QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
+                    if cb then
+                        RepararCarro()
+                        Wait(5000)
+                        SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+                        RepararPopo(vehicle)
+                    end
+                end)
+            end
+        elseif Config.Function == 'colour' then
+            if Config.Payment == 'off' then
+                PintarCarro()
+                Wait(5000)
+                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+            elseif Config.Payment == 'cash' then
+                QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
+                    if cb then
+                        PintarCarro()
+                        Wait(5000)
+                        SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+                    end
+                end)
+            end
+        elseif Config.Function == 'repair' then
+            if Config.Payment == 'off' then
+                RepararCarro()
+                Wait(5000)
+                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+            elseif Config.Payment == 'cash' then
+                QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
+                    if cb then
+                        RepararCarro()
+                        Wait(5000)
+                        RepararPopo(vehicle)
+                    end
+                end)
+            end
+        end
     end
 end)
