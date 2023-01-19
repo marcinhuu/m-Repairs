@@ -14,15 +14,15 @@ QBCore.Functions.CreateCallback('m-Repairs:server:VerificarMecanicos', function(
 
     for i = 1, #Players do
         local Player = QBCore.Functions.GetPlayer(Players[i])
-        if Player.PlayerData.job.name == Config.MechanicJob or Config.MechanicJob2 or Config.MechanicJob3 then
+        if Player.PlayerData.job.name == Config.MechanicJob then
             MecanicosOnline = MecanicosOnline + 1
         end
     end
 
     if MecanicosOnline >= Config.MechanicNecessary then
-        cb(true)
-    else
         cb(false)
+    else
+        cb(true)
     end
 end)
 

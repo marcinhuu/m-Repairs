@@ -4,13 +4,11 @@ Config = Config or {}
 -- Utility
 -------------------
 Config.Framework = "NEW" -- "NEW" -> New qbcore | "OLD" -> Old qbcore
-Config.MechanicJob = "mechanic" 
-Config.MechanicJob2 = "police"
-Config.MechanicJob3 = "mechanic" -- You dont need 3 mechanics, delete the line 9 and 8 and go to server lua line: 14 and remove the config.
-Config.MechanicNecessary = 2
+Config.MechanicJob = "mechanic"
+Config.MechanicNecessary = 1
 
 
-Config.OnlyUseWithMechanicOFF = false
+Config.OnlyUseWithMechanicOFF = true
 -------------------
 -- Stations
 -------------------
