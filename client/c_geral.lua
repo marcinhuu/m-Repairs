@@ -26,13 +26,13 @@ CreateThread(function() -- Thread to start the peds
             Wait(100)
         end
         if item.ped == nil then
-            item.ped = CreatePed(item.type, item.hash, item.vector4, item.a, false, true)
+            peds = CreatePed(item.type, item.hash, item.vector4, item.a, false, true)
             SetBlockingOfNonTemporaryEvents(peds, false)
-            SetPedDiesWhenInjured(item.ped, false)
-            SetPedCanPlayAmbientAnims(item.ped, true)
-            SetPedCanRagdollFromPlayerImpact(item.ped, false)
-            SetEntityInvincible(item.ped, true)
-            FreezeEntityPosition(item.ped, true)
+            SetPedDiesWhenInjured(peds, false)
+            SetPedCanPlayAmbientAnims(peds, true)
+            SetPedCanRagdollFromPlayerImpact(peds, false)
+            SetEntityInvincible(peds, true)
+            FreezeEntityPosition(peds, true)
         end
     end
 end)
