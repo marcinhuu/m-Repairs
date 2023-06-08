@@ -8,31 +8,23 @@ else
 end
 
 QBCore.Functions.CreateCallback('m-Repairs:server:VerificarMecanicos', function(source, cb)
-    local src = source
-    local Players = QBCore.Functions.GetPlayers()
     local MecanicosOnline = 0
 
-    for i = 1, #Players do
-        local Player = QBCore.Functions.GetPlayer(Players[i])
-        if Player.PlayerData.job.name == Config.MechanicJob then
+    for _, player in ipairs(QBCore.Functions.GetPlayers()) do
+        local job = QBCore.Functions.GetPlayerData(player).job
+        if job and job.name == Config.MechanicJob then
             MecanicosOnline = MecanicosOnline + 1
         end
     end
 
-    if MecanicosOnline >= Config.MechanicNecessary then
-        cb(false)
-    else
-        cb(true)
-    end
+    cb(MecanicosOnline >= Config.MechanicNecessary)
 end)
 
-
 QBCore.Functions.CreateCallback('m-Repairs:server:VerificarGuita', function(source, cb)
-    if QBCore.Functions.GetPlayer(source).Functions.RemoveMoney("cash", Config.Amount) then
-        cb({
-            state   = true,
-        })
+    local player = QBCore.Functions.GetPlayer(source)
+    if player and player.Functions.RemoveMoney("cash", Config.Amount) then
+        cb({ state = true })
     else
-        TriggerClientEvent('QBCore:Notify', source,Config["Language"]['Notificacoes']['SemGuita'], 'error', 3500)
+        TriggerClientEvent('QBCore:Notify', source, Config["Language"]['Notificacoes']['SemGuita'], 'error', 3500)
     end
 end)

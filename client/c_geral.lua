@@ -19,20 +19,21 @@ local peds = Config.Peds
 
 ---------------------------------------- #### THREADS #### ----------------------------------------
 
-CreateThread(function() -- Thread to start the peds
+CreateThread(function()
     for _, item in pairs(peds) do
         RequestModel(item.hash)
         while not HasModelLoaded(item.hash) do
             Wait(100)
         end
         if item.ped == nil then
-            peds = CreatePed(item.type, item.hash, item.vector4, item.a, false, true)
-            SetBlockingOfNonTemporaryEvents(peds, false)
-            SetPedDiesWhenInjured(peds, false)
-            SetPedCanPlayAmbientAnims(peds, true)
-            SetPedCanRagdollFromPlayerImpact(peds, false)
-            SetEntityInvincible(peds, true)
-            FreezeEntityPosition(peds, true)
+            local ped = CreatePed(item.type, item.hash, item.vector4, item.a, false, true)
+            SetBlockingOfNonTemporaryEvents(ped, false)
+            SetPedDiesWhenInjured(ped, false)
+            SetPedCanPlayAmbientAnims(ped, true)
+            SetPedCanRagdollFromPlayerImpact(ped, false)
+            SetEntityInvincible(ped, true)
+            FreezeEntityPosition(ped, true)
+            item.ped = ped
         end
     end
 end)
@@ -57,77 +58,46 @@ CreateThread(function()
     end
 end)
 
-
-
 CreateThread(function ()
     for k, v in pairs(Config["Repairs"]) do
+        local name = "Min"..k
+        local label = ""
         if Config.Function == 'colour' then
-            name = "Min"..k
-            exports["qb-target"]:AddBoxZone(name, vector3(v.x, v.y, v.z), 2, 2, {
-                name = name,
-                heading = 0,
-                debugPoly = false,
-            }, {
-                options = {
-                    {
-                        event = "m-Repairs:client:Reparar",
-                        icon = Config["Language"]["QBTarget"]["Icon"],
-                        label = Config["Language"]["QBTarget"]["Pintar"],
-                    },
-                },
-                distance = 5.0
-            })
+            label = Config["Language"]["QBTarget"]["Pintar"]
         elseif Config.Function == 'repair' then
-            name = "Min"..k
-            exports["qb-target"]:AddBoxZone(name, vector3(v.x, v.y, v.z), 2, 2, {
-                name = name,
-                heading = 0,
-                debugPoly = false,
-            }, {
-                options = {
-                    {
-                        event = "m-Repairs:client:Reparar",
-                        icon = Config["Language"]["QBTarget"]["Icon"],
-                        label = Config["Language"]["QBTarget"]["Reparar"],
-                    },
-                },
-                distance = 5.0
-            })
+            label = Config["Language"]["QBTarget"]["Reparar"]
         elseif Config.Function == 'all' then
-            name = "Min"..k
-            exports["qb-target"]:AddBoxZone(name, vector3(v.x, v.y, v.z), 2, 2, {
-                name = name,
-                heading = 0,
-                debugPoly = false,
-            }, {
-                options = {
-                    {
-                        event = "m-Repairs:client:Reparar",
-                        icon = Config["Language"]["QBTarget"]["Icon"],
-                        label = Config["Language"]["QBTarget"]["Falar"],
-                    },
-                },
-                distance = 5.0
-            })
+            label = Config["Language"]["QBTarget"]["Falar"]
         end
+        exports["qb-target"]:AddBoxZone(name, vector3(v.x, v.y, v.z), 2, 2, {
+            name = name,
+            heading = 0,
+            debugPoly = false,
+        }, {
+            options = {
+                {
+                    event = "m-Repairs:client:Reparar",
+                    icon = Config["Language"]["QBTarget"]["Icon"],
+                    label = label,
+                },
+            },
+            distance = 5.0
+        })
     end
 end)
 
+
 function RepararCarro()
-    QBCore.Functions.Progressbar("RepararCarro", Config["Language"]["ProgressBars"]["Reparar"], 5000, false, true, {disableMovement = true,disableCarMovement = true,disableMouse = false,disableCombat = true,
-    }, {}, {}, {}, function() 
+    QBCore.Functions.Progressbar("RepararCarro", Config["Language"]["ProgressBars"]["Reparar"], 5000, false, true, {disableMovement = true,disableCarMovement = true,disableMouse = false,disableCombat = true}, {}, {}, {}, function() 
     end)
 end
 
 function PintarCarro()
-    QBCore.Functions.Progressbar("RepararCarro", Config["Language"]["ProgressBars"]["Pintar"], 5000, false, true, {disableMovement = true,disableCarMovement = true,disableMouse = false,disableCombat = true,
-    }, {}, {}, {}, function() 
+    QBCore.Functions.Progressbar("PintarCarro", Config["Language"]["ProgressBars"]["Pintar"], 5000, false, true, {disableMovement = true,disableCarMovement = true,disableMouse = false,disableCombat = true}, {}, {}, {}, function() 
     end)
 end
 
 function RepararPopo(vehicle)
-    local playerPed = GetPlayerPed(-1)
-    local vehicle = GetVehiclePedIsIn(playerPed, false)
     FreezeEntityPosition(vehicle, true)  
     Wait(1000)
     SetVehicleFixed(vehicle)
@@ -142,107 +112,92 @@ end
 
 RegisterNetEvent('m-Repairs:client:Reparar')
 AddEventHandler("m-Repairs:client:Reparar", function()
-    local playerPed = GetPlayerPed(-1)
-    local vehicle   = GetVehiclePedIsIn(playerPed, false)
+    local playerPed = PlayerPedId()
+    local vehicle = GetVehiclePedIsIn(playerPed, false)
+    
     if not vehicle then
         QBCore.Functions.Notify("You need to be inside a vehicle.", "error")
+        return
     end
-    if Config.OnlyUseWithMechanicOFF then
+    
+    local function repararCarro()
+        RepararCarro()
+        Wait(5000)
+        SetVehicleColours(vehicle, math.random(1, #Cores), math.random(1, #Cores))
+    end
+    
+    local function repararPopo()
+        RepararPopo(vehicle)
+    end
+    
+    local function verificarGuita()
+        QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
+            if cb then
+                repararCarro()
+                Wait(5000)
+                repararPopo()
+            end
+        end)
+    end
+    
+    local function verificarMecanicos()
         QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarMecanicos", function(cb)
             if cb then
                 if Config.Function == 'all' then
                     if Config.Payment == 'off' then
-                        RepararCarro()
-                        Wait(5000)
-                        SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
-                        RepararPopo(vehicle)
+                        repararCarro()
+                        repararPopo()
                     elseif Config.Payment == 'cash' then
-                        QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
-                            if cb then
-                                RepararCarro()
-                                Wait(5000)
-                                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
-                                RepararPopo(vehicle)
-                            end
-                        end)
+                        verificarGuita()
                     end
                 elseif Config.Function == 'colour' then
                     if Config.Payment == 'off' then
                         PintarCarro()
                         Wait(5000)
-                        SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+                        SetVehicleColours(vehicle, math.random(1, #Cores), math.random(1, #Cores))
                     elseif Config.Payment == 'cash' then
-                        QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
-                            if cb then
-                                PintarCarro()
-                                Wait(5000)
-                                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
-                            end
-                        end)
+                        verificarGuita()
                     end
                 elseif Config.Function == 'repair' then
                     if Config.Payment == 'off' then
-                        RepararCarro()
+                        repararCarro()
                         Wait(5000)
-                        SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+                        SetVehicleColours(vehicle, math.random(1, #Cores), math.random(1, #Cores))
                     elseif Config.Payment == 'cash' then
-                        QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
-                            if cb then
-                                RepararCarro()
-                                Wait(5000)
-                                RepararPopo(vehicle)
-                            end
-                        end)
+                        verificarGuita()
                     end
                 end
             else
                 QBCore.Functions.Notify("Mechanics available :)", "error")
             end
         end)
+    end
+    
+    if Config.OnlyUseWithMechanicOFF then
+        verificarMecanicos()
     else
         if Config.Function == 'all' then
             if Config.Payment == 'off' then
-                RepararCarro()
-                Wait(5000)
-                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
-                RepararPopo(vehicle)
+                repararCarro()
+                repararPopo()
             elseif Config.Payment == 'cash' then
-                QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
-                    if cb then
-                        RepararCarro()
-                        Wait(5000)
-                        SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
-                        RepararPopo(vehicle)
-                    end
-                end)
+                verificarGuita()
             end
         elseif Config.Function == 'colour' then
             if Config.Payment == 'off' then
                 PintarCarro()
                 Wait(5000)
-                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+                SetVehicleColours(vehicle, math.random(1, #Cores), math.random(1, #Cores))
             elseif Config.Payment == 'cash' then
-                QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
-                    if cb then
-                        PintarCarro()
-                        Wait(5000)
-                        SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
-                    end
-                end)
+                verificarGuita()
             end
         elseif Config.Function == 'repair' then
             if Config.Payment == 'off' then
-                RepararCarro()
+                repararCarro()
                 Wait(5000)
-                SetVehicleColours(vehicle, math.random(1, #Cores),math.random(1, #Cores))
+                SetVehicleColours(vehicle, math.random(1, #Cores), math.random(1, #Cores))
             elseif Config.Payment == 'cash' then
-                QBCore.Functions.TriggerCallback("m-Repairs:server:VerificarGuita", function(cb)
-                    if cb then
-                        RepararCarro()
-                        Wait(5000)
-                        RepararPopo(vehicle)
-                    end
-                end)
+                verificarGuita()
             end
         end
     end
