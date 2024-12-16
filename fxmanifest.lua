@@ -1,6 +1,6 @@
 fx_version 'cerulean'
-author '! marcinhu.#6158'
-Description 'Repairs'
+author 'marcinhu'
+Description 'store.mscripts.pt'
 game 'gta5'
 
 shared_scripts {

@@ -1,10 +1,13 @@
 Config = Config or {}
 
 -- Utility
-Config.Framework = "NEW" -- "NEW" -> New qbcore | "OLD" -> Old qbcore
-Config.MechanicJob = "mechanic"
-Config.MechanicNecessary = 1
-Config.OnlyUseWithMechanicOFF = true
+Config.CoreName = "qb-core" -- Your core name
+Config.MechanicJob = "mechanic" -- Job name
+Config.MechanicNecessary = 1 -- Number of mechanics needed to use the service
+Config.OnlyUseWithMechanicOFF = true -- If you want to use this script only with the mechanic off, set to true
+Config.Function = 'repair' -- Functions: "repair" - Only repair vehicle. | "colour" - Only change a colour. | "all" - Repair & Colour
+Config.Payment = 'cash' -- "cash" or "bank"
+Config.Amount = 500 -- Payment amount if you use 'cash'
 
 -- Stations
 Config["Repairs"] = {
@@ -17,25 +20,16 @@ Config["Repairs"] = {
     -- You can add more locations
 }
 
-Config.Function = 'repair' -- Functions: "repair" - Only repair vehicle. | "colour" - Only change a colour. | "all" - Repair & Colour
-Config.Payment = 'cash' -- You can put: OFF or cash
-Config.Amount = 500 -- Payment amount if you use 'cash'
-
 -- Language
-Config["Language"] = {
-    ["QBTarget"] = {
-        ["Falar"] = "Speak",
-        ["Reparar"] = "Repair",
-        ["Pintar"] = "Paint",
-        ["Icon"] = "fas fa-car",
-    },
-    ["ProgressBars"] = {
-        ["Reparar"] = "Repairing the vehicle...",
-        ["Pintar"] = "Painting the car..."
-    },
-    ['Notificacoes'] = {
-        ["SemGuita"] = "You don't have enough money"
-    }
+Config.Language = {
+    speak = "Speak",
+    repair = "Repair",
+    paint = "Paint",
+    icon = "fas fa-car",
+    progressRepair = "Repairing the vehicle...",
+    progressPaint = "Painting the car...",
+    noMoney = "You don't have enough money",
+    insideVeh = "You need to be inside a vehicle.",
 }
 
 -- Blip
@@ -50,7 +44,6 @@ Config.BlipRepair = {
 -- Peds
 Config.Peds = {
     [1] = {type = 4, hash = GetHashKey("mp_m_waremech_01"), vector4 = vector4(737.27, -1088.88, 22.17, 85.72)}, --LScustoms Industrial sector
-    -- You can add more peds if you want under this line
     [2] = {type = 4, hash = GetHashKey("mp_m_waremech_01"), vector4 = vector4(-1160.03, -2011.93, 13.18, 312.81)}, --LScustoms airport
     [3] = {type = 4, hash = GetHashKey("mp_m_waremech_01"), vector4 = vector4(-323.4, -145.7, 39.02, 67.87)}, --LSCustoms main
     [4] = {type = 4, hash = GetHashKey("mp_m_waremech_01"), vector4 = vector4(1174.92, 2636.56, 37.75, 356.12)}, --Desert Sector

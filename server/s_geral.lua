@@ -1,11 +1,4 @@
-if Config.Framework == "NEW" then
-    QBCore = exports['qb-core']:GetCoreObject()
-elseif Config.Framework == "OLD" then 
-    QBCore = nil
-    TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end) 
-else
-    print("The Framework '", Config.Framework, "' is not support, please change in config.lua")
-end
+local QBCore = exports[Config.CoreName]:GetCoreObject()
 
 QBCore.Functions.CreateCallback('m-Repairs:server:VerificarMecanicos', function(source, cb)
     local MecanicosOnline = 0
@@ -22,9 +15,19 @@ end)
 
 QBCore.Functions.CreateCallback('m-Repairs:server:VerificarGuita', function(source, cb)
     local player = QBCore.Functions.GetPlayer(source)
-    if player and player.Functions.RemoveMoney("cash", Config.Amount) then
-        cb({ state = true })
+    if Config.Payment == "bank" then
+        if player and player.Functions.RemoveMoney("bank", Config.Amount) then
+            cb({ state = true })
+        else
+            TriggerClientEvent('QBCore:Notify', source, Config.Language.noMoney, 'error', 3500)
+        end
+    elseif Config.Payment == "cash" then
+        if player and player.Functions.RemoveMoney("cash", Config.Amount) then
+            cb({ state = true })
+        else
+            TriggerClientEvent('QBCore:Notify', source, Config.Language.noMoney, 'error', 3500)
+        end
     else
-        TriggerClientEvent('QBCore:Notify', source, Config["Language"]['Notificacoes']['SemGuita'], 'error', 3500)
+        print("Missing payment type on Config.Payment")
     end
 end)
