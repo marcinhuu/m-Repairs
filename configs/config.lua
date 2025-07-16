@@ -2,6 +2,8 @@ Config = {}
 
 -- Utility
 Config.Framework = "qb" -- Framework: "qb" or "esx"
+Config.Notify = "ox" -- Notification system: "standalone", "qb" or "okok" or "ox" or "codem"
+Config.Language = "en" -- Language for notifications: "en" or "pt" or "fr" or "es"
 Config.mInsurance = false -- You use m-Insurance?
 
 Config.Mechanic = {
@@ -25,3 +27,4 @@ Config.RepairStations = {
         change_colour = true, -- If true, the vehicle color will random change after repair
     }
 }
+
